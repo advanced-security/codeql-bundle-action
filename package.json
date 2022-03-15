@@ -1,0 +1,32 @@
+{
+  "name": "codeql-bundle-action",
+  "version": "1.0.0",
+  "description": "GitHub Action to build custom CodeQL bundles.",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc --build",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "CodeQL",
+    "GitHub Action"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@actions/artifact": "^1.0.0",
+    "@actions/core": "^1.6.0",
+    "@actions/exec": "^1.1.0",
+    "@actions/github": "^5.0.0",
+    "@actions/io": "^1.1.1",
+    "@actions/tool-cache": "^1.7.1",
+    "js-yaml": "^4.1.0",
+    "tar": "^6.1.11"
+  },
+  "devDependencies": {
+    "@types/js-yaml": "^4.0.5",
+    "@types/node": "^16",
+    "@types/tar": "^6.1.1",
+    "eslint": "^8.11.0",
+    "typescript": "^4.6.2"
+  }
+}

@@ -1,0 +1,9 @@
+---
+library: true
+name: contoso/java-test
+version: 0.0.1
+dependencies:
+  contoso/java-queries: "*"
+  contoso/java-all: "*"
+tests: .
+extractor: java

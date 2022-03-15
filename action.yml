@@ -1,0 +1,28 @@
+name: "CodeQL Bundle"
+description: "Action to build custom CodeQL bundles"
+inputs:
+  bundle-version:
+    description: The tag of bundle release to customize (e.g., codeql-bundle-20220311)
+    required: false
+    default: latest
+  packs:
+    description: A comma-separated list of CodeQL packs to include in the bundle
+    required: true
+  workspace:
+    description: Root directory where the codeql-workspace.yml file is located
+    required: false
+    default: "."
+  upload:
+    description: Upload the created bundle
+    required: false
+    default: "false"
+  token:
+    default: ${{ github.token }}
+outputs:
+  bundle-path:
+    description: Path to the created bundle
+  bundle-tag:
+    description: The tag of the bundle that is customized
+runs:
+  using: "node16"
+  main: "./lib/codeql-bundle-action.js"

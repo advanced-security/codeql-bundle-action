@@ -1,0 +1,7 @@
+---
+library: true
+name: contoso/java-all
+version: 0.0.1
+dependencies:
+  codeql/java-all: "*"
+extractor: java

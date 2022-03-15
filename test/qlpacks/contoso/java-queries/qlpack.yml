@@ -1,0 +1,6 @@
+---
+library: false
+name: contoso/java-queries
+version: 0.0.1
+dependencies:
+  contoso/java-all: "*"

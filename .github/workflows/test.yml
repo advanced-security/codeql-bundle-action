@@ -1,0 +1,43 @@
+name: Test action
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    name: Test the action
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: CodeQL bundle
+        id: codeql-bundle
+        uses: ./
+        with:
+          packs: contoso/java-all, contoso/java-queries, contoso/java-customizations
+          workspace: test/qlpacks
+      # - name: CodeQL initialization
+      #   id: codeql-init
+      #   uses: github/codeql-action/init@v1
+      #   with:
+      #     tools: ${{ steps.codeql-bundle.outputs.bundle-path }}
+      - name: Bundle tests
+        env:
+          #CODEQL_PATH: ${{ steps.codeql-init.outputs.codeql-path }}
+          BUNDLE_PATH: ${{ steps.codeql-bundle.outputs.bundle-path }}
+        run: |
+          #$CODEQL_PATH test run test/java-test --debug --loglevel=ALL --log-to-stderr
+          temp_dir=`mktemp -d $RUNNER_TEMP/codeql.XXXXX`
+          tar xz -v -C "$temp_dir" --overwrite -f "$BUNDLE_PATH"
+          $temp_dir/codeql/codeql test run test/java-test
+
+      - name: Bundle release
+        env:
+          BUNDLE_PATH: ${{ steps.codeql-bundle.outputs.bundle-path }}
+          BUNDLE_TAG: ${{ steps.codeql-bundle.outputs.bundle-tag }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view $BUNDLE_TAG; then
+            gh release upload --clobber $BUNDLE_TAG $BUNDLE_PATH
+          else
+            gh release create $BUNDLE_TAG $BUNDLE_PATH --generate-notes
+          fi

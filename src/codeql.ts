@@ -129,8 +129,8 @@ export class CodeQL {
         const tmpDir = process.env.RUNNER_TEMP || "/tmp"
         const tmpPackDir = path.join(tmpDir, path.basename(packDir), path.basename(path.dirname(packPath)))
         const tmpPackPath = path.join(tmpPackDir, "qlpack.yml")
-        core.debug(`Moving ${packDir} to ${tmpDir} before creating.`)
-        await io.mv(packDir, tmpDir)
+        core.debug(`Copying ${packDir} to ${tmpDir} before creating.`)
+        await io.cp(packDir, tmpDir, { recursive: true })
 
         const lockFilePath = path.join(tmpPackDir, 'codeql-pack.lock.yml')
         core.debug(`Removing included lock file at ${lockFilePath}`)

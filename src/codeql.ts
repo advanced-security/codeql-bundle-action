@@ -29,6 +29,10 @@ export interface CodeQLPack {
     extractor: string | undefined;
 }
 
+export interface RecreatePackOptions {
+    outputPath: string;
+}
+
 interface RunResult {
     exitCode: number;
     stdout: string;
@@ -123,14 +127,17 @@ export class CodeQL {
         await this.run(...args)
     }
 
-    async recreatePack(packPath: string, additionalPacks: string[] = []) {
-        const packDir = path.resolve(path.dirname(packPath), '..')
-        const outputPath = path.resolve(packDir, '..', '..')
+    async recreatePack(packPath: string, additionalPacks: string[] = [], options?: RecreatePackOptions) {
+        const versionDir = path.dirname(packPath)
+        const packDir = path.resolve(versionDir, '..')
+        const scopeDir = path.resolve(packDir, '..')
+        const qlPacksDir = path.resolve(scopeDir, '..')
+        const outputPath = options?.outputPath || qlPacksDir
         const tmpDir = process.env.RUNNER_TEMP || "/tmp"
-        const tmpPackDir = path.join(tmpDir, path.basename(packDir), path.basename(path.dirname(packPath)))
+        const tmpPackDir = path.join(tmpDir, path.basename(scopeDir), path.basename(packDir), path.basename(versionDir))
         const tmpPackPath = path.join(tmpPackDir, "qlpack.yml")
-        core.debug(`Copying ${packDir} to ${tmpDir} before creating.`)
-        await io.cp(packDir, tmpDir, { recursive: true })
+        core.debug(`Copying ${packDir} to ${path.join(tmpDir, path.basename(scopeDir))} before creating.`)
+        await io.cp(packDir, path.join(tmpDir, path.basename(scopeDir)), { recursive: true })
 
         const lockFilePath = path.join(tmpPackDir, 'codeql-pack.lock.yml')
         core.debug(`Removing included lock file at ${lockFilePath}`)

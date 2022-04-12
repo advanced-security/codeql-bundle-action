@@ -20,28 +20,28 @@ jobs:
         with:
           name: codeql-bundle
           path: ${{ steps.codeql-bundle.outputs.bundle-path }}
-  test-bundle-with-codeql-action:
-    name: Test bundle with CodeQL Action
-    runs-on: ubuntu-latest
-    needs: create-test-bundle
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Download bundle
-        id: download
-        uses: actions/download-artifact@v3
-        with:
-          name: codeql-bundle
-      - name: CodeQL initialization
-        id: codeql-init
-        uses: github/codeql-action/init@v1
-        with:
-          tools: ${{steps.download.outputs.download-path}}/codeql-bundle.tar.gz
-      - name: Run Java test
-        env:
-          CODEQL_PATH: ${{ steps.codeql-init.outputs.codeql-path }}
-        run: |
-          $CODEQL_PATH test run test/java-test
+  # test-bundle-with-codeql-action:
+  #   name: Test bundle with CodeQL Action
+  #   runs-on: ubuntu-latest
+  #   needs: create-test-bundle
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v2
+  #     - name: Download bundle
+  #       id: download
+  #       uses: actions/download-artifact@v3
+  #       with:
+  #         name: codeql-bundle
+  #     - name: CodeQL initialization
+  #       id: codeql-init
+  #       uses: github/codeql-action/init@v1
+  #       with:
+  #         tools: ${{steps.download.outputs.download-path}}/codeql-bundle.tar.gz
+  #     - name: Run Java test
+  #       env:
+  #         CODEQL_PATH: ${{ steps.codeql-init.outputs.codeql-path }}
+  #       run: |
+  #         $CODEQL_PATH test run test/java-test
   test-bundle-without-codeql-action:
     name: Test bundle without CodeQL Action
     runs-on: ubuntu-latest

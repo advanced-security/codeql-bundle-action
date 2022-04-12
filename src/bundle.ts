@@ -137,7 +137,7 @@ export class Bundle {
 
         const queryPacks = (await codeqlCli.listPacks(this.bundlePath)).filter(pack => pack.library === false)
         core.debug('Looking at query packs to recompile')
-        const tempPackDir = path.join(process.env.RUNNER_TEMP || "/tmp", "recreated-qlpacks")
+        const tempPackDir = path.join(this.tmpDir, "recreated-qlpacks")
         const recreatedPacks: Array<CodeQLPack> = []
         await Promise.all(queryPacks.map(async pack => {
             core.debug(`Determining if ${pack.name} needs to be recompiled.`)
@@ -152,6 +152,7 @@ export class Bundle {
         recreatedPacks.forEach(pack => {
             core.debug(`Going to move ${pack.name} to bundle`)
             const [scope, name] = pack.name.split('/', 2)
+            core.debug(`Bundle path: ${this.bundlePath} scope: ${scope} name: ${name} version: ${pack.version}`)
             const destPath = path.join(this.bundlePath, 'qlpacks', scope, name, pack.version)
             core.debug(`Removing old pack at ${destPath}`)
             io.rmRF(destPath)

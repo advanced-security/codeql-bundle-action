@@ -92,7 +92,7 @@ export class CodeQL {
                 name: packs[path].name,
                 path: path,
                 library: packs[path].library,
-                version: packs[path].version,
+                version: packs[path].version || "0.0.0",
                 dependencies: dependencies,
                 extractor: extractor
             }

@@ -149,19 +149,18 @@ export class Bundle {
             }
         }))
         core.debug('Finished re-creating packs')
-        recreatedPacks.forEach(pack => {
+        await Promise.all(recreatedPacks.map(async pack => {
             core.debug(`Going to move ${pack.name} to bundle`)
             const [scope, name] = pack.name.split('/', 2)
             core.debug(`Bundle path: ${this.bundlePath} scope: ${scope} name: ${name} version: ${pack.version}`)
             const destPath = path.join(this.bundlePath, 'qlpacks', scope, name, pack.version)
             core.debug(`Removing old pack at ${destPath}`)
-            io.rmRF(destPath)
+            await io.rmRF(destPath)
             const srcPath = path.join(tempPackDir, scope, name, pack.version)
             core.debug(`Moving new pack from ${srcPath} to ${destPath}`)
-            io.mv(srcPath, destPath)
-        })
-        io.rmRF(tempPackDir)
-
+            await io.mv(srcPath, destPath)
+        }))
+        await io.rmRF(tempPackDir)
     }
 
     async bundle(outputDir: string): Promise<string> {

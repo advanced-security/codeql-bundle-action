@@ -26,7 +26,7 @@ export interface CodeQLPack {
     library: boolean;
     version: string;
     dependencies: CodeQLPackDependency[]
-    extractor: string | undefined;
+    extractor?: string;
 }
 
 export interface RecreatePackOptions {
@@ -80,7 +80,7 @@ export class CodeQL {
         const packs = JSON.parse(result.stdout).packs
         return Object.keys(packs).map(path => {
             console.debug(`Listing pack at ${path}`)
-            const extractor = packs[path].extractor || ""
+            const extractor = packs[path].extractor || undefined
             const dependencies = packs[path].dependencies ? Object.keys(packs[path].dependencies).map(pack => {
                 return {
                     name: pack,

@@ -86,6 +86,7 @@ export class Bundle {
         await Promise.all(groupedPacks.library.map(async pack => await codeqlCli.bundlePack(pack.path, qlpacksPath, [workspace])))
         const tempRepackedPacksDir = path.join(this.tmpDir, "repacked-qlpacks")
         const tempStandardPackDir = path.join(this.tmpDir, "standard-qlpacks")
+        const availableBundlePacks = await codeqlCli.listPacks(this.bundlePath)
         // TODO: determine how to support multiple customizations packs targeting the same standard qlpack.
         const customizedPacks = await Promise.all(groupedPacks.customization.map(async pack => {
             core.debug(`Considering pack ${pack.name} for as a source of customizations.`)
@@ -94,9 +95,8 @@ export class Bundle {
                 throw new Error(`Pack ${pack.name} containing customizations doesn't define an extractor required to determine the language pack to customize.`)
             }
 
-            const availablePacks = await codeqlCli.listPacks(this.bundlePath)
             core.debug('Looking at compatible packs')
-            const compatibleStandardPacks = availablePacks.filter(pack => pack.name.startsWith('codeql/') && pack.library && pack.extractor === extractor)
+            const compatibleStandardPacks = availableBundlePacks.filter(pack => pack.name.startsWith('codeql/') && pack.library && pack.extractor === extractor)
             if (compatibleStandardPacks.length != 1) {
                 throw new Error(`Found the following list of compatible standard packs when we expected only 1: ${compatibleStandardPacks.map(pack => pack.name).join(',')} `)
             }
@@ -164,7 +164,7 @@ export class Bundle {
         // TODO: verify that all dependencies are in the CodeQL bundle.
         await Promise.all(groupedPacks.query.map(async pack => await codeqlCli.createPack(pack.path, qlpacksPath, [this.bundlePath])))
 
-        const queryPacks = (await codeqlCli.listPacks(this.bundlePath)).filter(pack => pack.library === false)
+        const queryPacks = availableBundlePacks.filter(pack => pack.library === false)
         core.debug('Looking at query packs to recompile')
         const tempRecreatedPackDir = path.join(this.tmpDir, "recreated-qlpacks")
         const recreatedPacks = (await Promise.all(queryPacks.map(async pack => {

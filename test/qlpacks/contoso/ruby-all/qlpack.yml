@@ -1,3 +1,4 @@
+library: true
 name: contoso/ruby-all
 version: 0.0.1
 dependencies:

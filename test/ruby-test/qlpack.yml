@@ -1,0 +1,8 @@
+---
+library: true
+name: contoso/ruby-test
+version: 0.0.1
+dependencies:
+  contoso/ruby-queries: "*"
+tests: .
+extractor: ruby

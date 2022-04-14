@@ -1,0 +1,7 @@
+---
+library: true
+name: contoso/ruby-customizations
+version: 0.0.1
+dependencies: 
+  codeql/ruby-all: "*"
+extractor: ruby

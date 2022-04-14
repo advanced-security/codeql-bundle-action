@@ -13,7 +13,7 @@ jobs:
         id: codeql-bundle
         uses: ./
         with:
-          packs: contoso/java-all, contoso/java-queries, contoso/java-customizations
+          packs: contoso/ruby-all, contoso/ruby-queries, contoso/ruby-customizations
           workspace: test/qlpacks
       - name: Upload test bundle
         uses: actions/upload-artifact@v3
@@ -63,4 +63,4 @@ jobs:
         env:
           CODEQL_PATH: ${{ runner.temp }}/codeql/codeql
         run: |
-          $CODEQL_PATH test run test/java-test
+          $CODEQL_PATH test run test/ruby-test

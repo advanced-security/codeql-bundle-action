@@ -1,0 +1,4 @@
+name: contoso/ruby-queries
+version: 0.0.1
+dependencies:
+  contoso/ruby-all: "*"

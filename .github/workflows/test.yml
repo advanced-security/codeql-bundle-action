@@ -59,7 +59,7 @@ jobs:
           BUNDLE_PATH: ${{steps.download.outputs.download-path}}/codeql-bundle.tar.gz
         run: |
           tar xv -C $RUNNER_TEMP -f $BUNDLE_PATH
-      - name: Run Java test
+      - name: Run tests
         env:
           CODEQL_PATH: ${{ runner.temp }}/codeql/codeql
         run: |

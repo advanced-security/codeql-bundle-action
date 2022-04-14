@@ -119,14 +119,15 @@ export class Bundle {
 
             const [scope, name] = standardPack.name.split('/', 2)
             const tempStandardPackNameDir = path.join(tempStandardPackDir, scope, name)
-            core.debug(`Copying ${standardPackVersionDir} to  ${tempStandardPackNameDir}.`)
-            await io.cp(standardPackVersionDir, tempStandardPackNameDir, { recursive: true })
+            const tempStandardPackVersionDir = path.join(tempStandardPackNameDir, standardPack.version)
+            core.debug(`Copying ${standardPackVersionDir} to  ${tempStandardPackVersionDir}.`)
+            await io.cp(standardPackVersionDir, tempStandardPackVersionDir, { recursive: true })
 
             const standardPackDefinition = (yaml.load(fs.readFileSync(standardPack.path, 'utf-8'))) as QLPack
             standardPackDefinition.dependencies = standardPackDefinition.dependencies || {}
             standardPackDefinition.dependencies[pack.name] = pack.version
 
-            const tempStandardPackVersionDir = path.join(tempStandardPackNameDir, standardPack.version)
+
             const tempStandardPackDefinition = path.join(tempStandardPackVersionDir, 'qlpack.yml')
             core.debug(`Updating ${standardPack.name}'s qlpack.yml at ${tempStandardPackDefinition} with dependency on ${pack.name}.`)
             core.debug(yaml.dump(standardPackDefinition))

@@ -2,6 +2,7 @@ import * as core from "@actions/core"
 import * as exec from "@actions/exec"
 import * as io from "@actions/io"
 import * as path from "path"
+import * as crypto from "crypto"
 
 export interface CodeQLVersion {
     productName: string;
@@ -135,16 +136,17 @@ export class CodeQL {
     }
 
     async recreatePack(packPath: string, additionalPacks: string[] = [], options?: RecreatePackOptions) {
-        const versionDir = path.dirname(packPath)
-        const packDir = path.resolve(versionDir, '..')
-        const scopeDir = path.resolve(packDir, '..')
-        const qlPacksDir = path.resolve(scopeDir, '..')
+        const packDir = path.dirname(packPath)
+        const version = path.basename(path.dirname(packPath))
+        const name = path.basename(path.resolve(path.dirname(packPath), '..'))
+        const scope = path.basename(path.resolve(path.dirname(packPath), '..', '..'))
+        const qlPacksDir = path.resolve(path.dirname(packPath), '..', '..', '..')
         const outputPath = options?.outputPath || qlPacksDir
-        const tmpDir = process.env.RUNNER_TEMP || "/tmp"
-        const tmpPackDir = path.join(tmpDir, path.basename(scopeDir), path.basename(packDir), path.basename(versionDir))
+        const tmpDir = path.join(process.env.RUNNER_TEMP || "/tmp", `recreate-pack-workdir-${crypto.randomBytes(8).toString('hex')}`)
+        const tmpPackDir = path.join(tmpDir, scope, name, version)
         const tmpPackPath = path.join(tmpPackDir, "qlpack.yml")
-        core.debug(`Copying ${packDir} to ${path.join(tmpDir, path.basename(scopeDir))} before creating.`)
-        await io.cp(packDir, path.join(tmpDir, path.basename(scopeDir)), { recursive: true })
+        core.debug(`Copying ${packDir} to ${tmpPackDir} before creating.`)
+        await io.cp(packDir, tmpPackDir, { recursive: true })
 
         const lockFilePath = path.join(tmpPackDir, 'codeql-pack.lock.yml')
         core.debug(`Removing included lock file at ${lockFilePath}`)
@@ -156,6 +158,7 @@ export class CodeQL {
         core.debug(`Removing included cache at ${cachePath}`)
         await io.rmRF(cachePath)
         await this.createPack(tmpPackPath, outputPath, additionalPacks)
-        await io.rmRF(path.dirname(tmpPackPath))
+        core.debug(`Removing temp workdir at ${tmpDir}`)
+        await io.rmRF(tmpDir)
     }
 }

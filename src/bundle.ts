@@ -84,6 +84,9 @@ export class Bundle {
         const codeqlCli = this.getCodeQL()
         const qlpacksPath = path.join(this.bundlePath, 'qlpacks')
         await Promise.all(groupedPacks.library.map(async pack => await codeqlCli.bundlePack(pack.path, qlpacksPath, [workspace])))
+        const tempRepackedPacksDir = path.join(this.tmpDir, "repacked-qlpacks")
+        const tempStandardPackDir = path.join(this.tmpDir, "standard-qlpacks")
+        // TODO: determine how to support multiple customizations packs targeting the same standard qlpack.
         const customizedPacks = await Promise.all(groupedPacks.customization.map(async pack => {
             core.debug(`Considering pack ${pack.name} for as a source of customizations.`)
             const extractor = pack.extractor
@@ -112,24 +115,49 @@ export class Bundle {
             fs.writeFileSync(pack.path, yaml.dump(packDefinition))
             await codeqlCli.bundlePack(pack.path, qlpacksPath, [workspace])
 
+            const standardPackVersionDir = path.dirname(standardPack.path)
+
+            const [scope, name] = standardPack.name.split('/', 2)
+            const tempStandardPackNameDir = path.join(tempStandardPackDir, scope, name)
+            core.debug(`Copying ${standardPackVersionDir} to  ${tempStandardPackNameDir}.`)
+            await io.cp(standardPackVersionDir, tempStandardPackNameDir, { recursive: true })
+
             const standardPackDefinition = (yaml.load(fs.readFileSync(standardPack.path, 'utf-8'))) as QLPack
             standardPackDefinition.dependencies = standardPackDefinition.dependencies || {}
             standardPackDefinition.dependencies[pack.name] = pack.version
-            core.debug(`Updating ${standardPack.name}'s qlpack.yml at ${standardPack.path} with dependency on ${pack.name}.`)
+
+            const tempStandardPackVersionDir = path.join(tempStandardPackNameDir, standardPack.version)
+            const tempStandardPackDefinition = path.join(tempStandardPackVersionDir, 'qlpack.yml')
+            core.debug(`Updating ${standardPack.name}'s qlpack.yml at ${tempStandardPackDefinition} with dependency on ${pack.name}.`)
             core.debug(yaml.dump(standardPackDefinition))
-            fs.writeFileSync(standardPack.path, yaml.dump(standardPackDefinition))
+            fs.writeFileSync(tempStandardPackDefinition, yaml.dump(standardPackDefinition))
 
             core.debug(`Adding ${pack.name} to ${standardPack.name}'s 'Customizations.qll'`)
-            const customizationsLibPath = path.join(path.dirname(standardPack.path), 'Customizations.qll')
+            const customizationsLibPath = path.join(tempStandardPackVersionDir, 'Customizations.qll')
             const customizationsLib = fs.readFileSync(customizationsLibPath)
             const newCustomizationsLib = customizationsLib.toString() + `\nimport ${pack.name.replaceAll('-', '_').replaceAll('/', '.')}.Customizations\n`
             fs.writeFileSync(customizationsLibPath, newCustomizationsLib)
 
             // Rebundle the pack against the CodeQL bundle. All dependencies should be in the CodeQL pack.
-            await codeqlCli.rebundlePack(standardPack.path, [this.bundlePath])
+            await codeqlCli.rebundlePack(tempStandardPackDefinition, [this.bundlePath], { outputPath: tempRepackedPacksDir })
 
             return standardPack
         }))
+        core.debug(`Removing temporary directory ${tempStandardPackDir} holding the modified standard qlpacks`)
+        await io.rmRF(tempStandardPackDir)
+        core.debug('Finished re-bundling packs')
+        await Promise.all(customizedPacks.map(async pack => {
+            core.debug(`Going to move ${pack.name} to bundle`)
+            const [scope, name] = pack.name.split('/', 2)
+            core.debug(`Bundle path: ${this.bundlePath} scope: ${scope} name: ${name} version: ${pack.version}`)
+            const destPath = path.join(this.bundlePath, 'qlpacks', scope, name, pack.version)
+            core.debug(`Removing old pack at ${destPath}`)
+            await io.rmRF(destPath)
+            const srcPath = path.join(tempRepackedPacksDir, scope, name, pack.version)
+            core.debug(`Moving new pack from ${srcPath} to ${destPath}`)
+            await io.mv(srcPath, destPath)
+        }))
+        await io.rmRF(tempRepackedPacksDir)
         core.debug(`The following packs are customized: ${customizedPacks.map(pack => pack.name).join(',')}`)
         // Assume all library packs the query packs rely on are bundle into the CodeQL bundle.
         // TODO: verify that all dependencies are in the CodeQL bundle.
@@ -137,17 +165,16 @@ export class Bundle {
 
         const queryPacks = (await codeqlCli.listPacks(this.bundlePath)).filter(pack => pack.library === false)
         core.debug('Looking at query packs to recompile')
-        const tempPackDir = path.join(this.tmpDir, "recreated-qlpacks")
-        const recreatedPacks: Array<CodeQLPack> = []
-        await Promise.all(queryPacks.map(async pack => {
+        const tempRecreatedPackDir = path.join(this.tmpDir, "recreated-qlpacks")
+        const recreatedPacks = (await Promise.all(queryPacks.map(async pack => {
             core.debug(`Determining if ${pack.name} needs to be recompiled.`)
             if (pack.dependencies.some(dep => customizedPacks.find(pack => dep.name === pack.name))) {
-                core.debug(`Query pack ${pack.name} relies on a customized library pack. Repacking into ${tempPackDir}`)
+                core.debug(`Query pack ${pack.name} relies on a customized library pack. Repacking into ${tempRecreatedPackDir}`)
 
-                await codeqlCli.recreatePack(pack.path, [this.bundlePath], { outputPath: tempPackDir })
-                recreatedPacks.push(pack)
+                await codeqlCli.recreatePack(pack.path, [this.bundlePath], { outputPath: tempRecreatedPackDir })
+                return pack
             }
-        }))
+        }))).filter(pack => pack) as CodeQLPack[]
         core.debug('Finished re-creating packs')
         await Promise.all(recreatedPacks.map(async pack => {
             core.debug(`Going to move ${pack.name} to bundle`)
@@ -156,11 +183,11 @@ export class Bundle {
             const destPath = path.join(this.bundlePath, 'qlpacks', scope, name, pack.version)
             core.debug(`Removing old pack at ${destPath}`)
             await io.rmRF(destPath)
-            const srcPath = path.join(tempPackDir, scope, name, pack.version)
+            const srcPath = path.join(tempRecreatedPackDir, scope, name, pack.version)
             core.debug(`Moving new pack from ${srcPath} to ${destPath}`)
             await io.mv(srcPath, destPath)
         }))
-        await io.rmRF(tempPackDir)
+        await io.rmRF(tempRecreatedPackDir)
     }
 
     async bundle(outputDir: string): Promise<string> {

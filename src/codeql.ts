@@ -33,6 +33,10 @@ export interface RecreatePackOptions {
     outputPath: string;
 }
 
+export interface RebundlePackOptions {
+    outputPath: string;
+}
+
 interface RunResult {
     exitCode: number;
     stdout: string;
@@ -106,9 +110,12 @@ export class CodeQL {
         await this.run(...args)
     }
 
-    async rebundlePack(packPath: string, additionalPacks: string[] = []) {
-        const packDir = path.resolve(path.dirname(packPath), '..')
-        const outputPath = path.resolve(packDir, '..', '..')
+    async rebundlePack(packPath: string, additionalPacks: string[] = [], options?: RebundlePackOptions) {
+        const versionDir = path.dirname(packPath)
+        const packDir = path.resolve(versionDir, '..')
+        const scopeDir = path.resolve(packDir, '..')
+        const qlPacksDir = path.resolve(scopeDir, '..')
+        const outputPath = options?.outputPath || qlPacksDir
         const tmpDir = process.env.RUNNER_TEMP || "/tmp"
         const tmpPackPath = path.join(tmpDir, path.basename(packDir), path.basename(path.dirname(packPath)), "qlpack.yml")
         core.debug(`Moving ${packDir} to ${tmpDir} before packing.`)

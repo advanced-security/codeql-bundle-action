@@ -71,12 +71,15 @@ export class CodeQL {
     }
 
     async getVersion(): Promise<CodeQLVersion> {
-        const result = await this.run("version", "--format=json")
+        let args = ["version", "--format=json"]
+        if (core.isDebug()) args.push("-vvvv")
+        const result = await this.run(...args)
         return JSON.parse(result.stdout)
     }
 
     async listPacks(rootDirectory = "."): Promise<CodeQLPack[]> {
         let args = ["pack", "ls", "--format=json"]
+        if (core.isDebug()) args.push("-vvvv")
         if (rootDirectory !== ".") {
             args.push(rootDirectory)
         }
@@ -106,6 +109,7 @@ export class CodeQL {
 
     async bundlePack(packPath: string, outputPath: string, additionalPacks: string[] = []) {
         let args = ['pack', 'bundle', `--pack-path=${outputPath}`, '--format=json']
+        if (core.isDebug()) args.push("-vvvv")
         if (additionalPacks.length > 0) args.push(`--additional-packs=${additionalPacks.join(':')}`)
         args.push(packPath)
         await this.run(...args)
@@ -130,6 +134,7 @@ export class CodeQL {
             packPath = packPath.substring(0, packPath.length - 'qlpack.yml'.length - 1)
         }
         let args = ['pack', 'create', `--output=${outputPath}`, `--threads=0`, '--format=json']
+        if (core.isDebug()) args.push("-vvvv")
         if (additionalPacks.length > 0) args.push(`--additional-packs=${additionalPacks.join(':')}`)
         args.push(packPath)
         await this.run(...args)

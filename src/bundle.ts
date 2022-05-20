@@ -113,7 +113,8 @@ export class Bundle {
             }
             core.debug(`Updating ${pack.name}'s qlpack.yml at ${pack.path}.`)
             fs.writeFileSync(pack.path, yaml.dump(packDefinition))
-            await codeqlCli.bundlePack(pack.path, qlpacksPath, [workspace])
+            // Bundle the pack against the CodeQL bundle. All dependencies should be in the CodeQL pack.
+            await codeqlCli.bundlePack(pack.path, qlpacksPath, [this.bundlePath])
 
             const standardPackVersionDir = path.dirname(standardPack.path)
 

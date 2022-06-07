@@ -173,6 +173,7 @@ export class Bundle {
             if (pack.dependencies.some(dep => customizedPacks.find(pack => dep.name === pack.name))) {
                 core.debug(`Query pack ${pack.name} relies on a customized library pack. Repacking into ${tempRecreatedPackDir}`)
 
+                this.patchDependencyOnSuiteHelpers(pack)
                 await codeqlCli.recreatePack(pack.path, [this.bundlePath], { outputPath: tempRecreatedPackDir })
                 return pack
             }
@@ -190,6 +191,23 @@ export class Bundle {
             await io.mv(srcPath, destPath)
         }))
         await io.rmRF(tempRecreatedPackDir)
+    }
+
+    /* 
+        A CodeQL bundle can contain query packs that rely on a suite-helper pack that is not part of the bundle.
+        This poses a problem when recompiling a query pack based on the dependencies in the bundle.
+
+        This function patches the suite helper dependency to use the one available in the bundle.
+        We rely on the compiler for correctness.
+    */
+    patchDependencyOnSuiteHelpers(pack: CodeQLPack) {
+        const suiteHelpersPackName = 'codeql/suite-helpers'
+        const packDefinition = (yaml.load(fs.readFileSync(pack.path, 'utf-8'))) as QLPack
+        if (packDefinition.dependencies) {
+            core.debug(`Patching dependency on 'codeql/suite-helpers' to prevent resolution error.`)
+            packDefinition.dependencies[suiteHelpersPackName] = "*"
+            fs.writeFileSync(pack.path, yaml.dump(packDefinition))
+        }
     }
 
     async bundle(outputDir: string): Promise<string> {

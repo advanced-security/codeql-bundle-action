@@ -6,6 +6,8 @@ jobs:
   create-test-bundle:
     runs-on: ubuntu-latest
     name: Create Test Bundle
+    outputs:
+      artifact-name: ${{ steps.codeql-bundle.outputs.artifact-name }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -15,11 +17,6 @@ jobs:
         with:
           packs: contoso/ruby-all, contoso/ruby-queries, contoso/ruby-customizations
           workspace: test/qlpacks
-      - name: Upload test bundle
-        uses: actions/upload-artifact@v3
-        with:
-          name: codeql-bundle
-          path: ${{ steps.codeql-bundle.outputs.bundle-path }}
   # test-bundle-with-codeql-action:
   #   name: Test bundle with CodeQL Action
   #   runs-on: ubuntu-latest
@@ -53,7 +50,7 @@ jobs:
         id: download
         uses: actions/download-artifact@v3
         with:
-          name: codeql-bundle
+          name: ${{needs.create-test-bundle.outputs.artifact-name}}
       - name: Extract bundle
         env:
           BUNDLE_PATH: ${{steps.download.outputs.download-path}}/codeql-bundle.tar.gz

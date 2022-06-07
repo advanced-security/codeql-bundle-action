@@ -19,6 +19,8 @@ inputs:
   token:
     default: ${{ github.token }}
 outputs:
+  artifact-name:
+    description: "Name of the artifact containing the uploaded bundle"
   bundle-path:
     description: Path to the created bundle
   bundle-tag:

@@ -28,7 +28,9 @@ async function run() {
     const newBundle = await bundle.bundle(runnerTemp)
     core.setOutput("bundle-path", newBundle)
     if (uploadBundle || core.isDebug()) {
-        artifact.create().uploadArtifact(`codeql-${bundleVersion}.tar.gz`, [newBundle], runnerTemp)
+        const artifactName = `codeql-${bundleVersion}.tar.gz`
+        artifact.create().uploadArtifact(artifactName, [newBundle], runnerTemp)
+        core.setOutput("artifact-name", artifactName)
     }
 }
 

@@ -18,6 +18,10 @@ inputs:
     default: "true"
   token:
     default: ${{ github.token }}
+  concurrency-limit:
+    description: The max number of packs that will be processed concurrently
+    required: false
+    default: "2"
 outputs:
   artifact-name:
     description: "Name of the artifact containing the uploaded bundle"

@@ -6,7 +6,9 @@ import * as path from "path"
 import * as fs from "fs"
 import * as tar from "tar"
 import * as yaml from "js-yaml"
+import * as async from "async"
 import { CodeQL, CodeQLPack, CodeQLPackDependency } from "./codeql"
+import internal = require("stream")
 
 interface QLPackDependencies {
     [key: string]: string
@@ -66,6 +68,7 @@ export class Bundle {
     }
 
     async addPacks(workspace: string, ...packs: CodeQLPack[]) {
+        const concurrencyLimit = Number.parseInt(core.getInput('concurrency-limit')) || 2
         const groupedPacks = packs.reduce((acc, pack) => {
             if (!pack.library) {
                 acc.query.push(pack)
@@ -88,7 +91,7 @@ export class Bundle {
         const tempStandardPackDir = path.join(this.tmpDir, "standard-qlpacks")
         const availableBundlePacks = await codeqlCli.listPacks(this.bundlePath)
         // TODO: determine how to support multiple customizations packs targeting the same standard qlpack.
-        const customizedPacks = await Promise.all(groupedPacks.customization.map(async pack => {
+        const customizedPacks = await async.mapLimit(groupedPacks.customization, concurrencyLimit, async (pack: CodeQLPack) => {
             core.debug(`Considering pack ${pack.name} as a source of customizations.`)
             const extractor = pack.extractor
             if (extractor === undefined) {
@@ -144,11 +147,11 @@ export class Bundle {
             await codeqlCli.rebundlePack(tempStandardPackDefinition, [this.bundlePath], { outputPath: tempRepackedPacksDir })
 
             return standardPack
-        }))
+        })
         core.debug(`Removing temporary directory ${tempStandardPackDir} holding the modified standard qlpacks`)
         await io.rmRF(tempStandardPackDir)
         core.debug('Finished re-bundling packs')
-        await Promise.all(customizedPacks.map(async pack => {
+        await async.eachLimit(customizedPacks, concurrencyLimit, async (pack: CodeQLPack) => {
             core.debug(`Going to move ${pack.name} to bundle`)
             const [scope, name] = pack.name.split('/', 2)
             core.debug(`Bundle path: ${this.bundlePath} scope: ${scope} name: ${name} version: ${pack.version}`)
@@ -158,17 +161,17 @@ export class Bundle {
             const srcPath = path.join(tempRepackedPacksDir, scope, name, pack.version)
             core.debug(`Moving new pack from ${srcPath} to ${destPath}`)
             await io.mv(srcPath, destPath)
-        }))
+        })
         await io.rmRF(tempRepackedPacksDir)
         core.debug(`The following packs are customized: ${customizedPacks.map(pack => pack.name).join(',')}`)
         // Assume all library packs the query packs rely on are bundle into the CodeQL bundle.
         // TODO: verify that all dependencies are in the CodeQL bundle.
-        await Promise.all(groupedPacks.query.map(async pack => await codeqlCli.createPack(pack.path, qlpacksPath, [this.bundlePath])))
+        await async.eachLimit(groupedPacks.query, concurrencyLimit, async (pack: CodeQLPack) => await codeqlCli.createPack(pack.path, qlpacksPath, [this.bundlePath]))
 
         const queryPacks = availableBundlePacks.filter(pack => pack.library === false)
         core.debug('Looking at query packs to recompile')
         const tempRecreatedPackDir = path.join(this.tmpDir, "recreated-qlpacks")
-        const recreatedPacks = (await Promise.all(queryPacks.map(async pack => {
+        const recreatedPacks = (await async.mapLimit(queryPacks, concurrencyLimit, async (pack: CodeQLPack) => {
             core.debug(`Determining if ${pack.name} needs to be recompiled.`)
             if (pack.dependencies.some(dep => customizedPacks.find(pack => dep.name === pack.name))) {
                 core.debug(`Query pack ${pack.name} relies on a customized library pack. Repacking into ${tempRecreatedPackDir}`)
@@ -177,9 +180,9 @@ export class Bundle {
                 await codeqlCli.recreatePack(pack.path, [this.bundlePath], { outputPath: tempRecreatedPackDir })
                 return pack
             }
-        }))).filter(pack => pack) as CodeQLPack[]
+        })).filter(pack => pack) as CodeQLPack[]
         core.debug('Finished re-creating packs')
-        await Promise.all(recreatedPacks.map(async pack => {
+        await async.eachLimit(recreatedPacks, concurrencyLimit, async (pack: CodeQLPack) => {
             core.debug(`Going to move ${pack.name} to bundle`)
             const [scope, name] = pack.name.split('/', 2)
             core.debug(`Bundle path: ${this.bundlePath} scope: ${scope} name: ${name} version: ${pack.version}`)
@@ -189,7 +192,7 @@ export class Bundle {
             const srcPath = path.join(tempRecreatedPackDir, scope, name, pack.version)
             core.debug(`Moving new pack from ${srcPath} to ${destPath}`)
             await io.mv(srcPath, destPath)
-        }))
+        })
         await io.rmRF(tempRecreatedPackDir)
     }
 

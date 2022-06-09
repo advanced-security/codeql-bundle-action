@@ -76,7 +76,15 @@ To create a CodeQL customization pack follow these steps:
 4. Add the Java standard library as a dependency for development of the customizations using the CodeQL CLI as follows: `codeql pack add --dir=java-customizations codeql/java-all` **Note: ensure the version is compatible with the CodeQL bundle being targeted!**
 
 You can now add your customizations directly in the `Customizations.qll` or other modules that are imported by the `Customizations.qll`.
-For example, see our test cases for [Ruby](test/qlpacks/contoso/ruby-customizations/contoso/ruby_customizations/Customizations.qll) and [Java](test/qlpacks/contoso/java-customizations/contoso/java_customizations/Customizations.qll)
+For examples see our test cases for [Ruby](test/qlpacks/contoso/ruby-customizations/contoso/ruby_customizations/Customizations.qll) and [Java](test/qlpacks/contoso/java-customizations/contoso/java_customizations/Customizations.qll)
+
+# Performance
+
+The creation of a bundle includes the compilation of added CodeQL query packs as well as CodeQL query packs relying on a CodeQL library pack that has been customized.
+Depending on the amount of packs that need to be compiled this can be resource intensive.
+By default we only process two CodeQL packs concurrently. However, if a machine with better specs is available this limitation can be increased by setting the `concurrency-limit` value.
+An indication of resource contention on the Action runner is when the action fails with the CodeQL CLI exiting with a `null` return value.
+This indicates the process has been killed by the operating system (this has been only observed for Linux).
 
 # Limitations
 

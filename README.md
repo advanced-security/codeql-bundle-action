@@ -62,6 +62,15 @@ The following Action workflow excerpt shows how a custom bundle can be used in a
           tools: codeql-bundle.tar.gz
 ```
 
+## Locating your CodeQL packs
+
+The action relies on a CodeQL Workspace to resolve the location of the specified CodeQL packs.
+A CodeQL Workspace can be defined using a `codeql-workspace.yml` file that should contain a key `provide` with an array of locations to your CodeQL packs (i.e., the location of the `qlpack.yml` files).
+
+For an example you can consult the test [CodeQL Workspace](test/qlpacks/codeql-workspace.yml)
+
+By default the action looks at the root of the repository. If the CodeQL Workspace specification is located in a subfolder then you can use the `workspace` input to specify its location.
+
 # Customizations
 
 The CodeQL standard library can be customized by adding implementations of available extension points to a special CodeQL library called `Customizations.qll` that is available for most of the languages (this is not available for C++).

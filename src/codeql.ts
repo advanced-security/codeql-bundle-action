@@ -174,6 +174,8 @@ export class CodeQL {
         const cachePath = path.join(tmpPackDir, '.cache')
         core.debug(`Removing included cache at ${cachePath}`)
         await io.rmRF(cachePath)
+        core.debug('Remove qlx compiled queries.')
+        await exec.exec('find', [tmpPackDir, '-name', '*.qlx', '-delete'])
         await this.createPack(tmpPackPath, outputPath, additionalPacks)
         core.debug(`Removing temp workdir at ${tmpDir}`)
         await io.rmRF(tmpDir)

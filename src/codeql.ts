@@ -3,6 +3,8 @@ import * as exec from "@actions/exec"
 import * as io from "@actions/io"
 import * as path from "path"
 import * as crypto from "crypto"
+import * as yaml from "js-yaml"
+import * as fs from "fs"
 
 export interface CodeQLVersion {
     productName: string;
@@ -19,7 +21,6 @@ export interface CodeQLVersion {
 export interface CodeQLPackDependency {
     name: string;
     version: string;
-    inclusive: boolean
 }
 export interface CodeQLPack {
     path: string;
@@ -42,6 +43,18 @@ interface RunResult {
     exitCode: number;
     stdout: string;
     stderr: string;
+}
+
+export interface QLPackDependencyYmlSpec {
+    [key: string]: string
+}
+
+export interface CodeQLPackYmlSpec {
+    name: string;
+    version?: string;
+    library: boolean;
+    dependencies?: QLPackDependencyYmlSpec
+    extractor?: string;
 }
 
 export class CodeQL {
@@ -88,21 +101,20 @@ export class CodeQL {
         const packs = JSON.parse(result.stdout).packs
         return Object.keys(packs).map(path => {
             console.debug(`Listing pack at ${path}`)
-            const extractor = packs[path].extractor || undefined
-            const dependencies = packs[path].dependencies ? Object.keys(packs[path].dependencies).map(pack => {
+            const packDefinition = (yaml.load(fs.readFileSync(path, 'utf-8'))) as CodeQLPackYmlSpec
+            const dependencies = packDefinition.dependencies ? Object.keys(packDefinition.dependencies).map(pack => {
                 return {
                     name: pack,
-                    version: packs[path].dependencies[pack].text,
-                    inclusive: packs[path].dependencies[pack].inclusive
+                    version: (packDefinition.dependencies as QLPackDependencyYmlSpec)[pack]
                 }
             }) : []
             return {
-                name: packs[path].name,
+                name: packDefinition.name,
                 path: path,
-                library: packs[path].library,
-                version: packs[path].version || "0.0.0",
+                library: packDefinition.library,
+                version: packDefinition.version || "0.0.0",
                 dependencies: dependencies,
-                extractor: extractor
+                extractor: packDefinition.extractor
             }
         })
     }

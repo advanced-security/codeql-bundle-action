@@ -7,19 +7,8 @@ import * as fs from "fs"
 import * as tar from "tar"
 import * as yaml from "js-yaml"
 import * as async from "async"
-import { CodeQL, CodeQLPack, CodeQLPackDependency } from "./codeql"
+import { CodeQL, CodeQLPack, CodeQLPackYmlSpec } from "./codeql"
 import internal = require("stream")
-
-interface QLPackDependencies {
-    [key: string]: string
-}
-
-interface QLPack {
-    name: string;
-    version: string;
-    library: boolean;
-    dependencies?: QLPackDependencies
-}
 
 export class Bundle {
     private octokit: any
@@ -106,7 +95,7 @@ export class Bundle {
 
             const standardPack = compatibleStandardPacks[0]
             core.debug(`Found compatible standard pack ${standardPack.name} as a target for customization.`)
-            const packDefinition = (yaml.load(fs.readFileSync(pack.path, 'utf-8'))) as QLPack
+            const packDefinition = (yaml.load(fs.readFileSync(pack.path, 'utf-8'))) as CodeQLPackYmlSpec
             if (packDefinition.dependencies) {
                 core.debug(`Removing dependency on ${standardPack.name} to prevent circular dependency.`)
                 delete packDefinition.dependencies[standardPack.name]
@@ -127,7 +116,7 @@ export class Bundle {
             core.debug(`Copying ${standardPackVersionDir} to  ${tempStandardPackVersionDir}.`)
             await io.cp(standardPackVersionDir, tempStandardPackVersionDir, { recursive: true })
 
-            const standardPackDefinition = (yaml.load(fs.readFileSync(standardPack.path, 'utf-8'))) as QLPack
+            const standardPackDefinition = (yaml.load(fs.readFileSync(standardPack.path, 'utf-8'))) as CodeQLPackYmlSpec
             standardPackDefinition.dependencies = standardPackDefinition.dependencies || {}
             standardPackDefinition.dependencies[pack.name] = pack.version
 
@@ -205,7 +194,7 @@ export class Bundle {
     */
     patchDependencyOnSuiteHelpers(pack: CodeQLPack) {
         const suiteHelpersPackName = 'codeql/suite-helpers'
-        const packDefinition = (yaml.load(fs.readFileSync(pack.path, 'utf-8'))) as QLPack
+        const packDefinition = (yaml.load(fs.readFileSync(pack.path, 'utf-8'))) as CodeQLPackYmlSpec
         if (packDefinition.dependencies) {
             core.debug(`Patching dependency on 'codeql/suite-helpers' to prevent resolution error.`)
             packDefinition.dependencies[suiteHelpersPackName] = "*"

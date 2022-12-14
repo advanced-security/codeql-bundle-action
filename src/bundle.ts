@@ -73,6 +73,7 @@ export class Bundle {
             customization: []
         } as { query: CodeQLPack[]; library: CodeQLPack[], customization: CodeQLPack[] })
 
+        core.debug(`Found ${groupedPacks.query.length} query pack(s), ${groupedPacks.library.length} library pack(s), ${groupedPacks.customization.length} customization pack(s)`)
         const codeqlCli = this.getCodeQL()
         const qlpacksPath = path.join(this.bundlePath, 'qlpacks')
         await Promise.all(groupedPacks.library.map(async pack => await codeqlCli.bundlePack(pack.path, qlpacksPath, [workspace])))

@@ -10,7 +10,7 @@ A custom codeql bundle has the following benefits:
 - A compilation cache for all the included queries resulting in a faster analysis.
 - All the included queries can benefit from customizations that improve the coverage of the analysis.
 
-# Usage
+## Usage
 
 The following Action workflow is a minimal example showing how to use this action to create a bundle containing the CodeQL packs listed in `packs` and how to upload it so it can be referenced in a CodeQL analysis workflow.
 
@@ -71,7 +71,7 @@ For an example you can consult the test [CodeQL Workspace](test/qlpacks/codeql-w
 
 By default the action looks at the root of the repository. If the CodeQL Workspace specification is located in a subfolder then you can use the `workspace` input to specify its location.
 
-# Customizations
+## Customizations
 
 The CodeQL standard library can be customized by adding implementations of available extension points to a special CodeQL library called `Customizations.qll` that is available for most of the languages (this is not available for C++).
 This action uses that mechanism to inject customizations defined in a so called CodeQL customization pack.
@@ -87,7 +87,7 @@ To create a CodeQL customization pack follow these steps:
 You can now add your customizations directly in the `Customizations.qll` or other modules that are imported by the `Customizations.qll`.
 For examples see our test cases for [Ruby](test/qlpacks/contoso/ruby-customizations/contoso/ruby_customizations/Customizations.qll) and [Java](test/qlpacks/contoso/java-customizations/contoso/java_customizations/Customizations.qll)
 
-# Performance
+## Performance
 
 The creation of a bundle includes the compilation of added CodeQL query packs as well as CodeQL query packs relying on a CodeQL library pack that has been customized.
 Depending on the amount of packs that need to be compiled this can be resource intensive.
@@ -95,7 +95,7 @@ By default we only process two CodeQL packs concurrently. However, if a machine 
 An indication of resource contention on the Action runner is when the action fails with the CodeQL CLI exiting with a `null` return value.
 This indicates the process has been killed by the operating system (this has been only observed for Linux).
 
-# Limitations
+## Limitations
 
 This action supports all the languages in the targeted bundle that provides a `Customizations.qll` module.
 For the latest bundle this should be all languages except for C++.

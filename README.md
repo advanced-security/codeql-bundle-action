@@ -62,6 +62,16 @@ The following Action workflow excerpt shows how a custom bundle can be used in a
           tools: codeql-bundle.tar.gz
 ```
 
+### Demo project
+
+The [CodeQL Bundle Demo](https://github.com/advanced-security-demo/codeql-bundle-demo) project demonstrates the use of the CodeQL Bundle Action.
+
+The demo includes:
+
+- A [customizations pack](https://github.com/advanced-security-demo/codeql-bundle-demo/tree/main/vapi-customizations).
+- A GitHub Action [workflow](https://github.com/advanced-security-demo/codeql-bundle-demo/blob/main/.github/workflows/bundle.yaml) to build and release a custom CodeQL bundle.
+- A GitHub Action [Code Scanning workflow](https://github.com/advanced-security-demo/codeql-bundle-demo/blob/main/.github/workflows/codeql.yaml) to analyze the repository with the released custom CodeQL bundle.
+
 ## Locating your CodeQL packs
 
 The action relies on a CodeQL Workspace to resolve the location of the specified CodeQL packs.

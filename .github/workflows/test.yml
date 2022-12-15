@@ -1,6 +1,12 @@
 name: Test action
 on:
   workflow_dispatch:
+    inputs:
+      bundle-version:
+        description: "Tag of the bundle to use for testing"
+        required: true
+        default: "latest"
+        type: string
 
 jobs:
   create-test-bundle:

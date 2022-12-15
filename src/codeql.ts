@@ -5,6 +5,7 @@ import * as path from "path"
 import * as crypto from "crypto"
 import * as yaml from "js-yaml"
 import * as fs from "fs"
+import * as semver from "semver"
 
 export interface CodeQLVersion {
     productName: string;
@@ -148,6 +149,10 @@ export class CodeQL {
         let args = ['pack', 'create', `--output=${outputPath}`, `--threads=0`, '--format=json']
         if (core.isDebug()) args.push("-vvvv")
         if (additionalPacks.length > 0) args.push(`--additional-packs=${additionalPacks.join(':')}`)
+        if (await this.hasQlxSupport()) {
+            core.debug('Recreating pack with QLX precompiled queries.')
+            args.push('--qlx')
+        }
         args.push(packPath)
         await this.run(...args)
     }
@@ -174,8 +179,15 @@ export class CodeQL {
         const cachePath = path.join(tmpPackDir, '.cache')
         core.debug(`Removing included cache at ${cachePath}`)
         await io.rmRF(cachePath)
+        core.debug('Remove qlx compiled queries.')
+        await exec.exec('find', [tmpPackDir, '-name', '*.qlx', '-delete'])
         await this.createPack(tmpPackPath, outputPath, additionalPacks)
         core.debug(`Removing temp workdir at ${tmpDir}`)
         await io.rmRF(tmpDir)
+    }
+
+    async hasQlxSupport(): Promise<boolean> {
+        const version = await this.getVersion()
+        return semver.gte(version.version, '2.11.4')
     }
 }

@@ -9,6 +9,9 @@ inputs:
     description: The organization and repository from which to fetch the bundle to be customized. Specified as "org/repo".
     required: false
     default: "github/codeql-action"
+  host:
+    description: The GitHub host from which to fetch the bundle to be customized.
+    required: false
   packs:
     description: A comma-separated list of CodeQL packs to include in the bundle
     required: true

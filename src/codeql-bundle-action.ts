@@ -5,13 +5,14 @@ import { Bundle } from "./bundle"
 async function run() {
     let bundleVersion = core.getInput('bundle-version')
     const repository = core.getInput('repository')
+    const host = core.getInput('host')
     const packs = core.getInput('packs').split(',').map(s => s.trim()).filter(s => s !== '')
     const workspace = core.getInput('workspace')
     const uploadBundle = core.getBooleanInput('upload')
     const token = core.getInput('token')
     const runnerTemp = process.env.RUNNER_TEMP || ""
 
-    const bundle = await Bundle.getBundleByTag(token, repository, bundleVersion)
+    const bundle = await Bundle.getBundleByTag(host, token, repository, bundleVersion)
     core.setOutput("bundle-tag", bundle.getTag())
 
     const codeqlCli = bundle.getCodeQL()

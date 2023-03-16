@@ -1,5 +1,6 @@
 import * as core from "@actions/core"
 import * as github from "@actions/github"
+import { Octokit } from "@octokit/rest"
 import * as tc from "@actions/tool-cache"
 import * as io from "@actions/io"
 import * as path from "path"
@@ -23,8 +24,8 @@ export class Bundle {
         this.tmpDir = tmpDir || process.env.RUNNER_TEMP || "/tmp"
     }
 
-    static async getBundleByTag(token: string, orgRepoSlug: string, tag: string): Promise<Bundle> {
-        const octokit = github.getOctokit(token)
+    static async getBundleByTag(host: string, token: string, orgRepoSlug: string, tag: string): Promise<Bundle> {
+        const octokit = host ? new Octokit({ baseUrl: host, auth: token }) : github.getOctokit(token);
         const [ org, repo ] = orgRepoSlug.split('/');
         if (tag === "latest") {
             core.debug('Resolving latest CodeQL bundle')

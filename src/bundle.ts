@@ -24,7 +24,7 @@ export class Bundle {
         this.tmpDir = tmpDir || process.env.RUNNER_TEMP || "/tmp"
     }
 
-    static async getBundleByTag(host: string, token: string, orgRepoSlug: string, tag: string): Promise<Bundle> {
+    static async getBundleByTag(host: string, token: string, orgRepoSlug: string, tag: string, platform: string): Promise<Bundle> {
         const octokit = host ? new Octokit({ baseUrl: host, auth: token }) : github.getOctokit(token);
         const [ org, repo ] = orgRepoSlug.split('/');
         if (tag === "latest") {
@@ -36,8 +36,9 @@ export class Bundle {
         const runnerTemp = process.env.RUNNER_TEMP || "/tmp"
         core.debug(`Retrieving release by tag ${tag}`)
         const { data: bundleRelease } = await octokit.rest.repos.getReleaseByTag({ owner: org, repo: repo, tag: tag })
-        core.debug('Locating asset \'codeql-bundle.tar.gz\'')
-        const asset = bundleRelease.assets.find((asset: any) => asset.name === 'codeql-bundle.tar.gz')
+        const assetName = "codeql-bundle" + (platform === "multi-platform" ? "" : platform) + ".tar.gz"
+        core.debug(`Locating asset '${assetName}'`)
+        const asset = bundleRelease.assets.find((asset: any) => asset.name === assetName)
         if (asset) {
             core.debug(`Downloading asset ${asset.browser_download_url}`)
             const downloadedBundlePath = await tc.downloadTool(asset.browser_download_url)

@@ -12,6 +12,10 @@ inputs:
   host:
     description: The GitHub host from which to fetch the bundle to be customized.
     required: false
+  platform:
+    description: "Specify which bundle platform to customize. Options are: 'linux64', 'osx64', 'win64', 'multi-platform'. The default is 'multi-platform'."
+    required: false
+    default: "multi-platform"
   packs:
     description: A comma-separated list of CodeQL packs to include in the bundle
     required: true

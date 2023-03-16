@@ -11,8 +11,9 @@ async function run() {
     const uploadBundle = core.getBooleanInput('upload')
     const token = core.getInput('token')
     const runnerTemp = process.env.RUNNER_TEMP || ""
+    const platform = core.getInput('platform')
 
-    const bundle = await Bundle.getBundleByTag(host, token, repository, bundleVersion)
+    const bundle = await Bundle.getBundleByTag(host, token, repository, bundleVersion, platform)
     core.setOutput("bundle-tag", bundle.getTag())
 
     const codeqlCli = bundle.getCodeQL()

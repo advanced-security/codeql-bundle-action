@@ -25,13 +25,13 @@ export class Bundle {
 
     static async getBundleByTag(token: string, orgRepoSlug: string, tag: string): Promise<Bundle> {
         const octokit = github.getOctokit(token)
+        const [ org, repo ] = orgRepoSlug.split('/');
         if (tag === "latest") {
             core.debug('Resolving latest CodeQL bundle')
-            const { data: release } = await octokit.rest.repos.getLatestRelease({ owner: "github", repo: "codeql-action" })
+            const { data: release } = await octokit.rest.repos.getLatestRelease({ owner: org, repo: repo })
             core.debug(`Found release tag ${release.tag_name}`)
             tag = release.tag_name;
         }
-        const [ org, repo ] = orgRepoSlug.split('/');
         const runnerTemp = process.env.RUNNER_TEMP || "/tmp"
         core.debug(`Retrieving release by tag ${tag}`)
         const { data: bundleRelease } = await octokit.rest.repos.getReleaseByTag({ owner: org, repo: repo, tag: tag })

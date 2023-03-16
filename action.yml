@@ -5,6 +5,10 @@ inputs:
     description: The tag of bundle release to customize (e.g., codeql-bundle-20220311)
     required: false
     default: latest
+  repository:
+    description: The organization and repository from which to fetch the bundle to be customized. Specified as "org/repo".
+    required: false
+    default: "github/codeql-action"
   packs:
     description: A comma-separated list of CodeQL packs to include in the bundle
     required: true

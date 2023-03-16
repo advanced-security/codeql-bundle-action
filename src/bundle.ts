@@ -23,11 +23,12 @@ export class Bundle {
         this.tmpDir = tmpDir || process.env.RUNNER_TEMP || "/tmp"
     }
 
-    static async getBundleByTag(token: string, tag: string): Promise<Bundle> {
+    static async getBundleByTag(token: string, orgRepoSlug: string, tag: string): Promise<Bundle> {
         const octokit = github.getOctokit(token)
+        const [ org, repo ] = orgRepoSlug.split('/');
         const runnerTemp = process.env.RUNNER_TEMP || "/tmp"
         core.debug(`Retrieving release by tag ${tag}`)
-        const { data: bundleRelease } = await octokit.rest.repos.getReleaseByTag({ owner: "github", repo: "codeql-action", tag: tag })
+        const { data: bundleRelease } = await octokit.rest.repos.getReleaseByTag({ owner: org, repo: repo, tag: tag })
         core.debug('Locating asset \'codeql-bundle.tar.gz\'')
         const asset = bundleRelease.assets.find((asset: any) => asset.name === 'codeql-bundle.tar.gz')
         if (asset) {
@@ -43,13 +44,13 @@ export class Bundle {
         }
     }
 
-    static async getLatestBundle(token: string): Promise<Bundle> {
+    static async getLatestBundle(token: string, orgRepoSlug : string): Promise<Bundle> {
         core.debug('Resolving latest CodeQL bundle')
         const octokit = github.getOctokit(token)
         const { data: release } = await octokit.rest.repos.getLatestRelease({ owner: "github", repo: "codeql-action" })
         core.debug(`Found release tag ${release.tag_name}`)
 
-        return await Bundle.getBundleByTag(token, release.tag_name)
+        return await Bundle.getBundleByTag(token, orgRepoSlug, release.tag_name)
     }
 
     getCodeQL(): CodeQL {

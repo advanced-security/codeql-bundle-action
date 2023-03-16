@@ -4,13 +4,14 @@ import { Bundle } from "./bundle"
 
 async function run() {
     let bundleVersion = core.getInput('bundle-version')
+    const repository = core.getInput('repository')
     const packs = core.getInput('packs').split(',').map(s => s.trim()).filter(s => s !== '')
     const workspace = core.getInput('workspace')
     const uploadBundle = core.getBooleanInput('upload')
     const token = core.getInput('token')
     const runnerTemp = process.env.RUNNER_TEMP || ""
 
-    const bundle = bundleVersion === "latest" ? await Bundle.getLatestBundle(token) : await Bundle.getBundleByTag(token, bundleVersion)
+    const bundle = bundleVersion === "latest" ? await Bundle.getLatestBundle(token, repository) : await Bundle.getBundleByTag(token, repository, bundleVersion)
     core.setOutput("bundle-tag", bundle.getTag())
 
     const codeqlCli = bundle.getCodeQL()

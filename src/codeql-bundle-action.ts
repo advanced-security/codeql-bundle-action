@@ -11,7 +11,7 @@ async function run() {
     const token = core.getInput('token')
     const runnerTemp = process.env.RUNNER_TEMP || ""
 
-    const bundle = bundleVersion === "latest" ? await Bundle.getLatestBundle(token, repository) : await Bundle.getBundleByTag(token, repository, bundleVersion)
+    const bundle = await Bundle.getBundleByTag(token, repository, bundleVersion)
     core.setOutput("bundle-tag", bundle.getTag())
 
     const codeqlCli = bundle.getCodeQL()

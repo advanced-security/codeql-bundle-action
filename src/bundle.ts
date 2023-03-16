@@ -15,12 +15,14 @@ export class Bundle {
     private octokit: any
     private tag: string
     private bundlePath: string
+    private assetName: string
     private tmpDir: string
 
-    private constructor(octokit: any, tag: string, bundlePath: string, tmpDir?: string) {
+    private constructor(octokit: any, tag: string, bundlePath: string, assetName: string, tmpDir?: string) {
         this.octokit = octokit
         this.tag = tag
         this.bundlePath = bundlePath
+        this.assetName = assetName
         this.tmpDir = tmpDir || process.env.RUNNER_TEMP || "/tmp"
     }
 
@@ -46,7 +48,7 @@ export class Bundle {
             await tc.extractTar(downloadedBundlePath, runnerTemp)
             core.debug(`Extracted downloaded asset to ${runnerTemp}`)
             const bundlePath = path.join(runnerTemp, 'codeql')
-            return new Bundle(octokit, tag, bundlePath, runnerTemp)
+            return new Bundle(octokit, tag, bundlePath, assetName, runnerTemp)
         } else {
             throw new Error(`Unable to download the CodeQL bundle version ${tag}`)
         }
@@ -219,5 +221,9 @@ export class Bundle {
 
     getTag(): string {
         return this.tag
+    }
+
+    getAssetName() : string {
+        return this.assetName
     }
 }

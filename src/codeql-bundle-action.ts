@@ -11,9 +11,30 @@ async function run() {
     const uploadBundle = core.getBooleanInput('upload')
     const token = core.getInput('token')
     const runnerTemp = process.env.RUNNER_TEMP || ""
-    const platform = core.getInput('platform')
+    const platforms = core.getInput('platforms').split(',').map(s => s.trim()).filter(s => s !== '')
+    // Confirm a platform was specified
+    if (platforms.length === 0) {
+        core.setFailed(`The provided platforms are empty`)
+        return
+    }
+    // Ensure all the platforms are valid options
+    const validPlatforms = ['linux64', 'osx64', 'windows64', 'multi-platform'];
+    const invalidPlatforms = platforms.filter(platform => !validPlatforms.includes(platform));
+    if (invalidPlatforms.length > 0) {
+        core.setFailed(`The provided platforms are invalid: ${invalidPlatforms.join(',')}`)
+        return
+    }
+    
+    // log the platforms
+    core.debug(`Platforms found: ${platforms.join(',')}`)
 
-    const bundle = await Bundle.getBundleByTag(host, token, repository, bundleVersion, platform)
+    // Download all the bundles
+    const bundles = await Promise.all(platforms.map(async platform => {
+        return await Bundle.getBundleByTag(host, token, repository, bundleVersion, platform)
+    }));
+
+    // Get the first (primary) bundle
+    const bundle = bundles[0];
     core.setOutput("bundle-tag", bundle.getTag())
 
     const codeqlCli = bundle.getCodeQL()
@@ -28,12 +49,22 @@ async function run() {
 
     const packsToAdd = availablePacks.filter(pack => packs.includes(pack.name))
     await bundle.addPacks(workspace, ...packsToAdd)
-    const newBundle = await bundle.bundle(runnerTemp)
-    core.setOutput("bundle-path", newBundle)
-    if (uploadBundle || core.isDebug()) {
-        artifact.create().uploadArtifact(bundle.getAssetName(), [newBundle], runnerTemp)
-        core.setOutput("artifact-name", bundle.getAssetName())
+
+    // Copy the qlpack from bundle to each of the other bundles
+    for (let i = 1; i < bundles.length; i++) {
+        const otherBundle = bundles[i];
+        await otherBundle.replaceQLPacks(bundle.getQLPacksPath());
     }
+
+    // Bundle each bundle using foreach
+    await Promise.all(bundles.map(async bundle => {
+        const newBundle = await bundle.bundle(runnerTemp)
+            core.setOutput(`bundle-path-${bundle.getPlatform()}`, newBundle)
+            if (uploadBundle || core.isDebug()) {
+                artifact.create().uploadArtifact(bundle.getAssetName(), [newBundle], runnerTemp)
+                core.setOutput(`artifact-name-${bundle.getPlatform()}`, bundle.getAssetName())
+            }
+        }));
 }
 
 async function runWrapper() {

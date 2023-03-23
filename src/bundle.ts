@@ -17,12 +17,14 @@ export class Bundle {
     private bundlePath: string
     private assetName: string
     private tmpDir: string
+    private platform: string
 
-    private constructor(octokit: any, tag: string, bundlePath: string, assetName: string, tmpDir?: string) {
+    private constructor(octokit: any, tag: string, bundlePath: string, assetName: string, platform: string, tmpDir?: string) {
         this.octokit = octokit
         this.tag = tag
         this.bundlePath = bundlePath
         this.assetName = assetName
+        this.platform = platform
         this.tmpDir = tmpDir || process.env.RUNNER_TEMP || "/tmp"
     }
 
@@ -45,10 +47,14 @@ export class Bundle {
             core.debug(`Downloading asset ${asset.browser_download_url}`)
             const downloadedBundlePath = await tc.downloadTool(asset.browser_download_url)
             core.debug(`Extracting downloaded asset ${downloadedBundlePath}`)
-            await tc.extractTar(downloadedBundlePath, runnerTemp)
-            core.debug(`Extracted downloaded asset to ${runnerTemp}`)
-            const bundlePath = path.join(runnerTemp, 'codeql')
-            return new Bundle(octokit, tag, bundlePath, assetName, runnerTemp)
+            // Create a unique directory for the bundle
+            const extractedBundleDirectory = path.join(runnerTemp, assetName.replace('.tar.gz', ''))
+            await io.mkdirP(extractedBundleDirectory)
+            // Extract the bundle
+            await tc.extractTar(downloadedBundlePath, extractedBundleDirectory)
+            core.debug(`Extracted downloaded asset to ${extractedBundleDirectory}`)
+            const bundlePath = path.join(extractedBundleDirectory, 'codeql')
+            return new Bundle(octokit, tag, bundlePath, assetName, extractedBundleDirectory)
         } else {
             throw new Error(`Unable to download the CodeQL bundle version ${tag}`)
         }
@@ -223,7 +229,21 @@ export class Bundle {
         return this.tag
     }
 
+    getPlatform(): string {
+        return this.platform
+    }
+
     getAssetName() : string {
         return this.assetName
+    }
+
+    getQLPacksPath() : string {
+        return path.join(this.bundlePath, 'qlpacks')
+    }
+
+    async replaceQLPacks(otherQLPacksDirectory : string) {
+        core.debug(`Replacing ${this.bundlePath}/qlpacks with ${otherQLPacksDirectory}`)
+        await io.rmRF(path.join(this.bundlePath, 'qlpacks'))
+        await io.cp(otherQLPacksDirectory, path.join(this.bundlePath, 'qlpacks'))
     }
 }

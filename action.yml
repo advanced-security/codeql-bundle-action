@@ -12,8 +12,8 @@ inputs:
   host:
     description: The GitHub host from which to fetch the bundle to be customized.
     required: false
-  platform:
-    description: "Specify which bundle platform to customize. Options are: 'linux64', 'osx64', 'win64', 'multi-platform'. The default is 'multi-platform'."
+  platforms:
+    description: "A comma separate list to specify which bundle platform to customize. Options are: 'linux64', 'osx64', 'win64', 'multi-platform'. The default is 'multi-platform'. The first bundle is considered the 'primary' must be compatible with the current platform."
     required: false
     default: "multi-platform"
   packs:
@@ -24,7 +24,7 @@ inputs:
     required: false
     default: "."
   upload:
-    description: Upload the created bundle
+    description: Upload the created bundles
     required: false
     default: "true"
   token:

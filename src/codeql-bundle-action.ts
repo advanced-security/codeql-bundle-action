@@ -18,7 +18,7 @@ async function run() {
         return
     }
     // Ensure all the platforms are valid options
-    const validPlatforms = ['linux64', 'osx64', 'windows64', 'multi-platform'];
+    const validPlatforms = ['linux64', 'osx64', 'win64', 'multi-platform'];
     const invalidPlatforms = platforms.filter(platform => !validPlatforms.includes(platform));
     if (invalidPlatforms.length > 0) {
         core.setFailed(`The provided platforms are invalid: ${invalidPlatforms.join(',')}`)

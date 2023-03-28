@@ -40,7 +40,7 @@ export class Bundle {
         const runnerTemp = process.env.RUNNER_TEMP || "/tmp"
         core.debug(`Retrieving release by tag ${tag}`)
         const { data: bundleRelease } = await octokit.rest.repos.getReleaseByTag({ owner: org, repo: repo, tag: tag })
-        const assetName = "codeql-bundle" + (platform === "multi-platform" ? "" : platform) + ".tar.gz"
+        const assetName = "codeql-bundle" + (platform === "multi-platform" ? "" : ("-" + platform)) + ".tar.gz"
         core.debug(`Locating asset '${assetName}'`)
         const asset = bundleRelease.assets.find((asset: any) => asset.name === assetName)
         if (asset) {
@@ -56,7 +56,7 @@ export class Bundle {
             const bundlePath = path.join(extractedBundleDirectory, 'codeql')
             return new Bundle(octokit, tag, bundlePath, assetName, extractedBundleDirectory)
         } else {
-            throw new Error(`Unable to download the CodeQL bundle version ${tag}`)
+            throw new Error(`Unable to download the CodeQL bundle version ${tag} for platform ${platform} using asset name ${assetName}.`)
         }
     }
 

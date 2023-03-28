@@ -212,7 +212,7 @@ export class Bundle {
     }
 
     async bundle(outputDir: string): Promise<string> {
-        const outputPath = path.join(outputDir, 'codeql-bundle.tar.gz')
+        const outputPath = path.join(outputDir, this.assetName)
         core.debug(`Creating CodeQL bundle at: ${outputPath}`)
         const cwd = path.dirname(this.bundlePath)
         const bundleDir = path.relative(path.dirname(this.bundlePath), this.bundlePath)
@@ -220,7 +220,8 @@ export class Bundle {
         await tar.create({
             gzip: true,
             file: outputPath,
-            cwd: cwd
+            cwd: cwd,
+            strict : true
         }, [bundleDir])
         return outputPath
     }

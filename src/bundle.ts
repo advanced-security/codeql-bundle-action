@@ -244,6 +244,6 @@ export class Bundle {
     async replaceQLPacks(otherQLPacksDirectory : string) {
         core.debug(`Replacing ${this.bundlePath}/qlpacks with ${otherQLPacksDirectory}`)
         await io.rmRF(path.join(this.bundlePath, 'qlpacks'))
-        await io.cp(otherQLPacksDirectory, path.join(this.bundlePath, 'qlpacks'))
+        await io.cp(otherQLPacksDirectory, path.join(this.bundlePath, 'qlpacks'), { recursive: true })        
     }
 }

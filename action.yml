@@ -33,6 +33,9 @@ inputs:
     description: The max number of packs that will be processed concurrently
     required: false
     default: "2"
+  default-config:
+    description: A path in the repository to a Code Scanning CodeQL configuration file which will be included in the bundle as used by default
+    required: false
 outputs:
   artifact-name:
     description: "Name of the artifact containing the uploaded bundle"

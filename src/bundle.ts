@@ -245,6 +245,11 @@ export class Bundle {
     async replaceQLPacks(otherQLPacksDirectory : string) {
         core.debug(`Replacing ${this.bundlePath}/qlpacks with ${otherQLPacksDirectory}`)
         await io.rmRF(path.join(this.bundlePath, 'qlpacks'))
-        await io.cp(otherQLPacksDirectory, path.join(this.bundlePath, 'qlpacks'), { recursive: true })        
+        await io.cp(otherQLPacksDirectory, path.join(this.bundlePath, 'qlpacks'), { recursive: true })
+    }
+
+    async addDefaultCodeScanningCodeQLConfig(codeScanningCodeQLConfig : string) {
+        core.debug(`Adding default Code Scanning CodeQL config from ${codeScanningCodeQLConfig}`)
+        await io.cp(codeScanningCodeQLConfig, this.bundlePath)
     }
 }

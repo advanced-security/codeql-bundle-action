@@ -250,6 +250,6 @@ export class Bundle {
 
     async addDefaultCodeScanningCodeQLConfig(codeScanningCodeQLConfig : string) {
         core.debug(`Adding default Code Scanning CodeQL config from ${codeScanningCodeQLConfig}`)
-        await io.cp(codeScanningCodeQLConfig, this.bundlePath)
+        await io.cp(codeScanningCodeQLConfig, path.join(this.bundlePath, 'default-codeql-config.yml'))
     }
 }

@@ -16,7 +16,7 @@ outputs:
 runs:
   using: "composite"
   steps:
-    - run: ./download-bundle.sh
+    - run: download-bundle/download-bundle.sh
       shell: bash
       id: download-bundle
       env:

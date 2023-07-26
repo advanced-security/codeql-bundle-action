@@ -17,7 +17,7 @@ jobs:
             gh release download codeql-bundle-v2.14.0 --repo github/codeql-action --pattern codeql-bundle.tar.gz --dir ${RUNNER_TEMP}
         env:
           GH_TOKEN: ${{ github.token }}
-      - uses: advanced-security/codeql-bundle-action/create-bundle@next
+      - uses: advanced-security/codeql-bundle-action/create-bundle@main
         id: create-bundle
         with:
           bundle-path: ${{ runner.temp }}/codeql-bundle.tar.gz

@@ -10,17 +10,19 @@ on:
 
 jobs:
   test:
+    name: "Create custom bundle"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - run: |
-            gh release download codeql-bundle-v2.14.0 --repo github/codeql-action --pattern codeql-bundle.tar.gz --dir ${RUNNER_TEMP}
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - uses: advanced-security/codeql-bundle-action/download-bundle@main
+        id: download-bundle
+        with:
+          tag: "latest"
+          platforms: "osx64,linux64,win64"
       - uses: advanced-security/codeql-bundle-action/create-bundle@main
         id: create-bundle
         with:
-          bundle-path: ${{ runner.temp }}/codeql-bundle.tar.gz
+          bundle-path: ${{ steps.download-bundle.outputs.output-path }}
           packs: "test/go-queries,test/go-customizations,test/java-queries,test/cpp-queries,test/javascript-queries" 
           workspace: "${{ github.workspace }}/tests/codeql-workspace.yml"
           default-code-scanning-config: "${{ github.workspace }}/tests/code-scanning-config.yml"

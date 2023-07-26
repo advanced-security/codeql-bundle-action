@@ -1,5 +1,5 @@
 ---
-library: false
+library: true
 warnOnImplicitThis: false
 name: test/go-customizations
 version: 0.0.1

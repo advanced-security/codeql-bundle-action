@@ -16,7 +16,7 @@ inputs:
 outputs:
   bundle-path:
     description: Path to the downloaded bundle
-    value: ${{ steps.download-bundle.outputs.output-path }}
+    value: ${{ steps.download-bundle.outputs.bundle-path }}
 runs:
   using: "composite"
   steps:

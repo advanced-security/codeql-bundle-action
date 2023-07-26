@@ -25,4 +25,4 @@ opts+=("--output ${output_path}")
 echo gh release download --repo github/codeql-action ${opts[@]}
 gh release download --repo github/codeql-action ${opts[@]}
 
-echo "output-path=${output_path}" >> $GITHUB_OUTPUT
+echo "bundle-path=${output_path}" >> $GITHUB_OUTPUT

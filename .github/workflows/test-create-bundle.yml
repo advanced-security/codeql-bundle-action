@@ -22,7 +22,7 @@ jobs:
       - uses: advanced-security/codeql-bundle-action/create-bundle@main
         id: create-bundle
         with:
-          bundle-path: ${{ steps.download-bundle.outputs.output-path }}
+          bundle-path: ${{ steps.download-bundle.outputs.bundle-path }}
           packs: "test/go-queries,test/go-customizations,test/java-queries,test/cpp-queries,test/javascript-queries" 
           workspace: "${{ github.workspace }}/tests/codeql-workspace.yml"
           default-code-scanning-config: "${{ github.workspace }}/tests/code-scanning-config.yml"

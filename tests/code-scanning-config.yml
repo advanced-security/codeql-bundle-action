@@ -1,0 +1,11 @@
+name: "Code Scanning configuration"
+
+packs:
+  go:
+    - test/go-queries
+  cpp:
+    - test/cpp-queries
+  javascript:
+    - test/javascript-queries
+  java:
+    - test/java-queries

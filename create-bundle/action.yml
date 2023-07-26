@@ -1,0 +1,43 @@
+name: "CodeQL Bundle: Create bundle"
+description: "Action to build custom CodeQL bundles"
+inputs:
+  bundle-path:
+    description: Path to the bundle to customize
+    required: true
+  packs:
+    description: A comma-separated list of CodeQL packs to include in the bundle
+    required: true
+  workspace:
+    description: Root directory where the codeql-workspace.yml file is located
+    required: false
+    default: "."
+  default-code-scanning-config:
+    description: Path to the default code scanning configuration file
+    required: false
+    default: ""
+  platforms:
+    description: A comma-separated list of platforms to build the bundle for, if supported by the bundle. Typically used with the generic bundle to build a specific platform bundle on a different runner architecture.
+    required: false
+    default: ""
+outputs:
+  bundle-path:
+    description: Path to the created bundle
+    value: ${{ steps.create-bundle.outputs.output-path }}
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/setup-python@v4
+      with:
+        python-version: "3.11"
+    - run: python -m pip install https://github.com/rvermeulen/codeql-bundle/releases/download/v0.2.0/codeql_bundle-0.2.0-py3-none-any.whl
+      shell: bash
+    - run: ./create-bundle.sh
+      id: create-bundle
+      env:
+        BUNDLE_PATH: ${{ inputs.bundle-path }}
+        PACKS: ${{ inputs.packs }}
+        WORKSPACE: ${{ inputs.workspace }}
+        DEFAULT_CODE_SCANNING_CONFIG: ${{ inputs.default-code-scanning-config }}
+        PLATFORM: ${{ inputs.platform }}
+        RUNNER_TEMP: ${{ runner.temp }}
+      shell: bash

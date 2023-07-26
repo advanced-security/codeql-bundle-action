@@ -9,6 +9,10 @@ inputs:
     description: "A comma-separated list of platforms to download the bundle for, options are: osx64, linux64, win64"
     required: true
     default: ""
+  token:
+    description: "A GitHub token to use for downloading the bundle"
+    required: true
+    default: ${{ github.token }}
 outputs:
   bundle-path:
     description: Path to the downloaded bundle
@@ -23,3 +27,4 @@ runs:
         TAG: ${{ inputs.tag }}
         PLATFORMS: ${{ inputs.platforms }}
         RUNNER_TEMP: ${{ runner.temp }}
+        GH_TOKEN: ${{ inputs.token }}

@@ -38,6 +38,6 @@ runs:
         PACKS: ${{ inputs.packs }}
         WORKSPACE: ${{ inputs.workspace }}
         DEFAULT_CODE_SCANNING_CONFIG: ${{ inputs.default-code-scanning-config }}
-        PLATFORM: ${{ inputs.platform }}
+        PLATFORMS: ${{ inputs.platforms }}
         RUNNER_TEMP: ${{ runner.temp }}
       shell: bash

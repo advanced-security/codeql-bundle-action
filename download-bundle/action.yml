@@ -1,0 +1,25 @@
+name: "CodeQL Bundle: Download bundle"
+description: "Action to download a GitHub provided CodeQL bundle that can be customized"
+inputs:
+  tag:
+    description: "The tag of the bundle to download"
+    required: true
+    default: "latest"
+  platforms:
+    description: "A comma-separated list of platforms to download the bundle for, options are: osx64, linux64, win64"
+    required: true
+    default: ""
+outputs:
+  bundle-path:
+    description: Path to the downloaded bundle
+    value: ${{ steps.download-bundle.outputs.output-path }}
+runs:
+  using: "composite"
+  steps:
+    - run: ./download-bundle.sh
+      shell: bash
+      id: download-bundle
+      env:
+        TAG: ${{ inputs.tag }}
+        PLATFORMS: ${{ inputs.platforms }}
+        RUNNER_TEMP: ${{ runner.temp }}

@@ -20,8 +20,8 @@ inputs:
     required: false
     default: ""
 outputs:
-  bundle-path:
-    description: Path to the created bundle
+  output-path:
+    description: Path to the created bundle or directory if multiple platforms are specified
     value: ${{ steps.create-bundle.outputs.output-path }}
 runs:
   using: "composite"

@@ -29,7 +29,11 @@ runs:
     - uses: actions/setup-python@v4
       with:
         python-version: "3.11"
-    - run: python -m pip install https://github.com/rvermeulen/codeql-bundle/releases/download/v0.2.0/codeql_bundle-0.2.0-py3-none-any.whl
+    - run: |
+        echo "::group::Installing dependencies"
+        echo "Installing codeql-bundle v0.2.0"
+        python -m pip install https://github.com/rvermeulen/codeql-bundle/releases/download/v0.2.0/codeql_bundle-0.2.0-py3-none-any.whl
+        echo "::endgroup::"
       shell: bash
     - run: create-bundle/create-bundle.sh
       id: create-bundle

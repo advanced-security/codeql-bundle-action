@@ -22,7 +22,8 @@ fi
 
 opts+=("--output ${output_path}")
 
-echo gh release download --repo github/codeql-action ${opts[@]}
+echo "::group::Downloading CodeQL bundle"
 gh release download --repo github/codeql-action ${opts[@]}
+echo "::endgroup::"
 
 echo "bundle-path=${output_path}" >> $GITHUB_OUTPUT

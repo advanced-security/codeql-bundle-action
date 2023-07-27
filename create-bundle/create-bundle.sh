@@ -24,6 +24,10 @@ if [[ -n ${DEFAULT_CODE_SCANNING_CONFIG} ]]; then
     opts+=("--code-scanning-config" "${DEFAULT_CODE_SCANNING_CONFIG}")
 fi
 
+if [[ ${DEBUG} -eq "true" ]]; then
+    opts+=("--log DEBUG")
+fi
+
 
 codeql-bundle ${opts[@]} $(echo ${PACKS} | tr ',' ' ')
 echo "::endgroup::"

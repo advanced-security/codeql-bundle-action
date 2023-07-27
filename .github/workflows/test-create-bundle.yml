@@ -21,6 +21,7 @@ jobs:
           workspace: "${{ github.workspace }}/tests/codeql-workspace.yml"
           default-code-scanning-config: "${{ github.workspace }}/tests/code-scanning-config.yml"
           platforms: "osx64,linux64,win64"
+          debug: "true"
       - uses: actions/upload-artifact@v3
         with:
           name: codeql-bundles

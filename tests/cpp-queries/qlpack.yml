@@ -4,4 +4,4 @@ warnOnImplicitThis: false
 name: test/cpp-queries
 version: 0.0.1
 dependencies:
-  codeql/cpp-all: ^0.8.0
+  codeql/cpp-all: "*"

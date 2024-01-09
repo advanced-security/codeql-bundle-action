@@ -8,12 +8,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: advanced-security/codeql-bundle-action/download-bundle@main
+      - uses: advanced-security/codeql-bundle-action/download-bundle@v2
         id: download-bundle
         with:
           tag: "latest"
           platforms: "osx64,linux64,win64"
-      - uses: advanced-security/codeql-bundle-action/create-bundle@main
+      - uses: advanced-security/codeql-bundle-action/create-bundle@v2
         id: create-bundle
         with:
           bundle-path: ${{ steps.download-bundle.outputs.bundle-path }}

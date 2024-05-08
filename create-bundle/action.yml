@@ -36,7 +36,7 @@ runs:
     - run: |
         echo "::group::Installing dependencies"
         echo "Installing codeql-bundle v0.2.0"
-        python -m pip install https://github.com/rvermeulen/codeql-bundle/releases/download/v0.2.0/codeql_bundle-0.2.0-py3-none-any.whl
+        python -m pip install https://github.com/advanced-security/codeql-bundle/releases/download/v0.2.0/codeql_bundle-0.2.0-py3-none-any.whl
         echo "::endgroup::"
       shell: bash
     - id: create-bundle

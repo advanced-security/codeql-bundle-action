@@ -1,6 +1,6 @@
 # CodeQL bundle action
 
-This action retrofits an existing [CodeQL bundle](https://github.com/github/codeql-action/releases) with additional [CodeQL packs](https://codeql.github.com/docs/codeql-cli/creating-and-working-with-codeql-packs/) using the [CodeQL bundle CLI](https://github.com/rvermeulen/codeql-bundle)
+This action retrofits an existing [CodeQL bundle](https://github.com/github/codeql-action/releases) with additional [CodeQL packs](https://codeql.github.com/docs/codeql-cli/creating-and-working-with-codeql-packs/) using the [CodeQL bundle CLI](https://github.com/advanced-security/codeql-bundle).
 The bundle will be a single deployable artifact containing the CodeQL standard library, the CodeQL standard queries, and any other libraries or queries that are relevant.
 Additionally, the CodeQL standard library and standard queries can be customized to consider additional sources, sinks, data-flow/taint steps, sanitizers and barriers.
 
@@ -45,6 +45,20 @@ jobs:
           name: codeql-bundle.tar.gz
           path: ${{ steps.create-bundle.outputs.output-path }}
 ```
+
+### Cache and compilation controls
+
+The `create-bundle` action installs [CodeQL bundle CLI v0.5.0](https://github.com/advanced-security/codeql-bundle/releases/tag/v0.5.0) and supports its cache-aware bundle creation options:
+
+| Input | Default | Description |
+| --- | --- | --- |
+| `threads` | CLI default | Number of threads to use when compiling queries |
+| `cache-dir` | CLI default | Directory used for downloaded bundles and compilation caches |
+| `cache-manifest` | CLI default | Path or URL of a supported bundle manifest |
+| `no-compilation-cache` | `false` | Do not resolve, download, or use published compilation caches |
+| `no-precompile` | `false` | Do not precompile the bundle |
+
+Leave `threads`, `cache-dir`, or `cache-manifest` unset to preserve the corresponding CLI default.
 
 The following Action workflow excerpt shows how a custom bundle can be used in a CodeQL analysis workflow.
 It assumes the custom bundle is available as a release, but any other location works as long as it is made
@@ -136,4 +150,4 @@ When providing multiple platforms the `output-path` output is a directory contai
 
 ## Limitations
 
-This Action uses the [CodeQL bundle CLI](https://github.com/rvermeulen/codeql-bundle) and inherits its limitations.
+This Action uses the [CodeQL bundle CLI](https://github.com/advanced-security/codeql-bundle) and inherits its limitations.

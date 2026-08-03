@@ -13,14 +13,18 @@ jobs:
           tag: "latest"
           platforms: "osx64,linux64,win64"
       - uses: actions/checkout@v4
-      - uses: advanced-security/codeql-bundle-action/create-bundle@v2
+      - name: Test create-bundle argument forwarding
+        run: bash tests/test-create-bundle.sh
+      - uses: ./create-bundle
         id: create-bundle
         with:
           bundle-path: ${{ steps.download-bundle.outputs.bundle-path }}
-          packs: "test/go-queries,test/go-customizations,test/java-queries,test/cpp-queries,test/javascript-queries" 
+          packs: "test/go-queries,test/go-customizations,test/java-queries,test/cpp-queries,test/javascript-queries"
           workspace: "${{ github.workspace }}/tests/codeql-workspace.yml"
           default-code-scanning-config: "${{ github.workspace }}/tests/code-scanning-config.yml"
           platforms: "osx64,linux64,win64"
+          threads: "2"
+          cache-dir: "${{ runner.temp }}/codeql-bundle-cache"
           debug: "true"
       - uses: actions/upload-artifact@v4
         with:

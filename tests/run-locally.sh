@@ -18,8 +18,7 @@ bash "${SCRIPT_DIR}/../download-bundle/download-bundle.sh"
 
 bundle_path=""
 while IFS='=' read -r key value; do
-    if [[ $key == "output-path" ]]; then
-        # The output path is the second value
+    if [[ $key == "bundle-path" ]]; then
         bundle_path=$value
     fi
 done < "${GITHUB_OUTPUT}"

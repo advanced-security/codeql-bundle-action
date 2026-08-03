@@ -13,8 +13,10 @@ jobs:
           tag: "latest"
           platforms: "osx64,linux64,win64"
       - uses: actions/checkout@v4
-      - name: Test create-bundle argument forwarding
-        run: bash tests/test-create-bundle.sh
+      - name: Test bundle scripts
+        run: |
+          bash tests/test-create-bundle.sh
+          bash tests/test-run-locally.sh
       - uses: ./create-bundle
         id: create-bundle
         with:

@@ -19,6 +19,26 @@ inputs:
     description: A comma-separated list of platforms to build the bundle for, if supported by the bundle. Typically used with the generic bundle to build a specific platform bundle on a different runner architecture.
     required: false
     default: ""
+  threads:
+    description: Number of threads to use when compiling queries
+    required: false
+    default: ""
+  cache-dir:
+    description: Directory used for downloaded bundles and compilation caches
+    required: false
+    default: ""
+  cache-manifest:
+    description: Path or URL of a supported bundle manifest
+    required: false
+    default: ""
+  no-compilation-cache:
+    description: Do not resolve, download, or use published compilation caches
+    required: false
+    default: "false"
+  no-precompile:
+    description: Do not precompile the bundle
+    required: false
+    default: "false"
   debug:
     description: Enable debug logging, by setting this value to "true"
     required: false
@@ -35,8 +55,8 @@ runs:
         python-version: "3.11"
     - run: |
         echo "::group::Installing dependencies"
-        echo "Installing codeql-bundle v0.2.0"
-        python -m pip install https://github.com/advanced-security/codeql-bundle/releases/download/v0.2.0/codeql_bundle-0.2.0-py3-none-any.whl
+        echo "Installing codeql-bundle v0.5.0"
+        python -m pip install "https://github.com/advanced-security/codeql-bundle/releases/download/v0.5.0/codeql_bundle-0.5.0-py3-none-any.whl"
         echo "::endgroup::"
       shell: bash
     - id: create-bundle
@@ -47,41 +67,12 @@ runs:
         DEFAULT_CODE_SCANNING_CONFIG: ${{ inputs.default-code-scanning-config }}
         PLATFORMS: ${{ inputs.platforms }}
         RUNNER_TEMP: ${{ runner.temp }}
+        THREADS: ${{ inputs.threads }}
+        CACHE_DIR: ${{ inputs.cache-dir }}
+        CACHE_MANIFEST: ${{ inputs.cache-manifest }}
+        NO_COMPILATION_CACHE: ${{ inputs.no-compilation-cache }}
+        NO_PRECOMPILE: ${{ inputs.no-precompile }}
         DEBUG: ${{ inputs.debug }}
+        ACTION_PATH: ${{ github.action_path }}
       shell: bash
-      run: |
-        #!/bin/bash
-
-        set -e
-
-        echo "::group::Creating CodeQL bundle."
-        echo "Using bundle at ${BUNDLE_PATH}."
-        echo "Using workspace at ${WORKSPACE}."
-        output_path=${RUNNER_TEMP}/codeql-bundle.tar.gz
-        opts=()
-        opts+=("--bundle" "${BUNDLE_PATH}")
-        opts+=("--workspace" "${WORKSPACE}")
-        if [[ -n ${PLATFORMS} ]]; then
-            echo "Targetting the platforms ${PLATFORMS}."
-            for platform in $(echo $PLATFORMS | tr ',' ' '); do
-            opts+=("--platform" "${platform}")
-            done
-            # When building multiple bundles, the output path is the directory containing the bundles
-            output_path=${RUNNER_TEMP}/bundles
-            mkdir -p ${output_path}
-        fi
-        opts+=("--output" "${output_path}")
-        if [[ -n ${DEFAULT_CODE_SCANNING_CONFIG} ]]; then
-            echo "Using code scanning config at ${DEFAULT_CODE_SCANNING_CONFIG} as the default config."
-            opts+=("--code-scanning-config" "${DEFAULT_CODE_SCANNING_CONFIG}")
-        fi
-
-        if [[ ${DEBUG} -eq "true" ]]; then
-            opts+=("--log DEBUG")
-        fi
-
-
-        codeql-bundle ${opts[@]} $(echo ${PACKS} | tr ',' ' ')
-        echo "::endgroup::"
-
-        echo "output-path=${output_path}" >> $GITHUB_OUTPUT
+      run: bash "${ACTION_PATH}/create-bundle.sh"
